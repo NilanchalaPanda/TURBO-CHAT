@@ -31,6 +31,9 @@ class SocketService {
         origin: "*",
       },
     });
+
+    // SUBSCRIBING THE MESSAGES -
+    sub.subscribe("MESSAGES");
   }
 
   //
@@ -47,6 +50,12 @@ class SocketService {
         // Publish this message to REDIS : lib : ioredis
         await pub.publish("MESSAGES", JSON.stringify({ message }));
       });
+    });
+
+    sub.on("message", (channel, message) => {
+      if (channel === "MESSAGES") {
+        io.emit("message", message);
+      }
     });
   }
 
