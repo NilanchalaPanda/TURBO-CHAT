@@ -1,7 +1,24 @@
 import { Server } from "socket.io";
-import Redis from 'ioredis'
+import Redis from "ioredis";
+require("dotenv").config();
 
-// TWO CONNECTIONS FOR 
+// TWO CONNECTIONS : PUBSUB model.
+// 1) To publish the message.
+// 2) To subscrbe the message.
+
+const pub = new Redis({
+  host: process.env.REDIS_HOST || "localhost",
+  port: Number(process.env.REDIS_PORT),
+  username: process.env.RESIS_USERNAME,
+  password: process.env.REDIS_PASSWORD,
+});
+
+const sub = new Redis({
+  host: process.env.REDIS_HOST || "localhost",
+  port: Number(process.env.REDIS_PORT),
+  username: process.env.RESIS_USERNAME,
+  password: process.env.REDIS_PASSWORD,
+});
 
 class SocketService {
   private _io: Server;
@@ -28,6 +45,7 @@ class SocketService {
         console.log("New message recieved..", message);
 
         // Publish this message to REDIS : lib : ioredis
+        await pub.publish("MESSAGES", JSON.stringify({ message }));
       });
     });
   }
