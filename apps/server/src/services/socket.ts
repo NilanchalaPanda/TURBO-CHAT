@@ -1,5 +1,7 @@
 import { Server } from "socket.io";
 import Redis from "ioredis";
+// import prismaClient from "./prisma";
+import { createProducer, produceMessage } from "./kafka";
 require("dotenv").config();
 
 // TWO CONNECTIONS : PUBSUB model.
@@ -52,9 +54,20 @@ class SocketService {
       });
     });
 
-    sub.on("message", (channel, message) => {
+    sub.on("message", async (channel, message) => {
       if (channel === "MESSAGES") {
         io.emit("message", message);
+
+        // Emitting the message to the DB :
+        // await prismaClient.message.create({
+        //   data: {
+        //     text: message,
+        //   },
+        // });
+
+        // MORE EFFICIENT WAY - Producing the message.
+        await produceMessage(message);
+        console.log("Message prodcued to Kafka Broker");
       }
     });
   }
